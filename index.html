@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Office Info Editor – Sửa thông tin file Word, PowerPoint, Excel</title>
+    <meta name="description" content="Sửa Tác giả, Tiêu đề, Công ty, Ngày tạo... (File > Info) của .docx, .pptx, .xlsx ngay trên trình duyệt. File không được tải lên server." />
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%234f46e5'/><path d='M10 8h9l5 5v11H10z' fill='white'/><path d='M13 17h8M13 20h6' stroke='%234f46e5' stroke-width='2'/></svg>" />
+  </head>
+  <body>
+    <header class="top">
+      <div class="brand">
+        <div class="logo">i</div>
+        <div>
+          <h1>Office Info Editor</h1>
+          <p>Sửa thông tin <b>File → Info</b> của <span class="tag word">.docx</span> <span class="tag ppt">.pptx</span> <span class="tag excel">.xlsx</span></p>
+        </div>
+      </div>
+      <div class="privacy">🔒 Xử lý 100% trên trình duyệt — file không rời khỏi máy bạn</div>
+    </header>
+
+    <main>
+      <label id="drop" class="drop">
+        <input id="file-input" type="file" multiple accept=".docx,.docm,.dotx,.dotm,.pptx,.pptm,.potx,.potm,.ppsx,.ppsm,.xlsx,.xlsm,.xltx,.xltm" hidden />
+        <div class="drop-icon">⬆</div>
+        <div class="drop-title">Kéo thả file vào đây hoặc <u>bấm để chọn</u></div>
+        <div class="drop-sub">Hỗ trợ nhiều file cùng lúc · Word, PowerPoint, Excel (định dạng Office 2007 trở lên)</div>
+      </label>
+
+      <section id="workspace" class="workspace" hidden>
+        <aside class="sidebar">
+          <div class="side-head">
+            <span>File đã chọn</span>
+            <button id="btn-clear" class="link">Xóa hết</button>
+          </div>
+          <ul id="file-list"></ul>
+          <button id="btn-download-all" class="btn primary block">⬇ Tải tất cả (.zip)</button>
+        </aside>
+
+        <div class="editor">
+          <div class="editor-head">
+            <div>
+              <h2 id="cur-name"></h2>
+              <div id="cur-meta" class="muted"></div>
+            </div>
+            <div class="actions">
+              <button id="btn-personal" class="btn" title="Xóa Tác giả, Người sửa cuối, Công ty, Quản lý, Ngày in">🧹 Xóa thông tin cá nhân</button>
+              <button id="btn-apply-all" class="btn" title="Chép các trường đã sửa của file này sang tất cả file khác">⇉ Áp dụng cho tất cả file</button>
+              <button id="btn-reset" class="btn">↺ Hoàn tác</button>
+              <button id="btn-download" class="btn primary">⬇ Tải file này</button>
+            </div>
+          </div>
+          <form id="form" autocomplete="off" onsubmit="return false"></form>
+        </div>
+      </section>
+    </main>
+
+    <footer>Mở mã nguồn trên <a href="https://github.com/wwm100107-creator/office-info-editor" target="_blank" rel="noopener">GitHub</a></footer>
+    <div id="toasts"></div>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
