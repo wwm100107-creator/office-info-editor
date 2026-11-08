@@ -1,6 +1,6 @@
 import './style.css';
 import JSZip from 'jszip';
-import { loadOffice, buildOffice, familyOf, FIELDS, GROUPS, PERSONAL_KEYS, nowLocal, isDirty, changedFields, customChanged } from './ooxml.js';
+import { loadOffice, buildOffice, familyOf, FIELDS, GROUPS, PERSONAL_KEYS, nowLocal, zipDate, isDirty, changedFields, customChanged } from './ooxml.js';
 
 const $ = (s) => document.querySelector(s);
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
@@ -115,6 +115,10 @@ function renderForm() {
     <button type="button" class="btn small" id="btn-add-custom">+ Thêm thuộc tính</button>
   </fieldset>`;
 
+  const isFinal = f.custom.some((p) => p.name === '_MarkAsFinal' && p.value === 'true');
+  $('#btn-final').classList.toggle('primary', isFinal);
+  $('#btn-final').textContent = isFinal ? '🔒 Đã khóa Mark as Final' : '🔒 Khóa chỉnh sửa (Mark as Final)';
+
   $('#form').innerHTML = groups + custom;
 }
 
@@ -164,7 +168,7 @@ $('#btn-clear').addEventListener('click', () => {
   render();
 });
 
-$('#form').addEventListener('input', (e) => {
+const onFormInput = (e) => {
   const f = cur();
   const t = e.target;
   if (t.dataset.key) {
@@ -181,7 +185,9 @@ $('#form').addEventListener('input', (e) => {
     }
     renderList();
   }
-});
+};
+$('#form').addEventListener('input', onFormInput);
+$('#form').addEventListener('change', onFormInput);
 
 $('#form').addEventListener('click', (e) => {
   const f = cur();
@@ -199,6 +205,20 @@ $('#form').addEventListener('click', (e) => {
     renderForm();
     document.querySelector(`[data-ci="${f.custom.length - 1}"][data-cf="name"]`).focus();
   }
+});
+
+$('#btn-final').addEventListener('click', () => {
+  const f = cur();
+  const idx = f.custom.findIndex((p) => p.name === '_MarkAsFinal');
+  if (idx >= 0 && f.custom[idx].value === 'true') {
+    f.custom.splice(idx, 1);
+    toast('Đã tắt chế độ khóa Mark as Final');
+  } else {
+    if (idx >= 0) f.custom[idx] = { name: '_MarkAsFinal', type: 'bool', value: 'true' };
+    else f.custom.push({ name: '_MarkAsFinal', type: 'bool', value: 'true' });
+    toast('Đã bật Mark as Final — khi mở bằng Office sẽ ở chế độ Chỉ đọc (Read-Only), tránh bị lưu đè mất thông tin', 'success');
+  }
+  render();
 });
 
 $('#btn-personal').addEventListener('click', () => {
@@ -246,6 +266,17 @@ $('#btn-download').addEventListener('click', async () => {
   }
 });
 
+$('#btn-download-zip').addEventListener('click', async () => {
+  const f = cur();
+  try {
+    const zip = new JSZip();
+    zip.file(f.name, await buildOffice(f), { date: zipDate(f) });
+    saveBlob(await zip.generateAsync({ type: 'blob' }), f.name.replace(/\.[^.]+$/, '') + '.zip');
+  } catch (e) {
+    toast(`Lỗi khi tạo file: ${e.message}`, 'error');
+  }
+});
+
 $('#btn-download-all').addEventListener('click', async () => {
   try {
     const zip = new JSZip();
@@ -254,7 +285,7 @@ $('#btn-download-all').addEventListener('click', async () => {
       let name = f.name;
       for (let i = 1; used.has(name.toLowerCase()); i++) name = f.name.replace(/(\.[^.]+)$/, ` (${i})$1`);
       used.add(name.toLowerCase());
-      zip.file(name, await buildOffice(f));
+      zip.file(name, await buildOffice(f), { date: zipDate(f) });
     }
     saveBlob(await zip.generateAsync({ type: 'blob' }), 'office-info-edited.zip');
   } catch (e) {

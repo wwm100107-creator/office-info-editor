@@ -116,6 +116,10 @@ const toIso = (local) => {
   return d && !isNaN(d) ? d.toISOString().replace(/\.\d{3}Z$/, 'Z') : '';
 };
 export const nowLocal = () => toLocal(new Date().toISOString());
+export function zipDate(f) {
+  const d = new Date(f.values.modified || f.values.created || Date.now());
+  return isNaN(d) ? new Date() : new Date(d.getTime() - d.getTimezoneOffset() * 60000);
+}
 
 const XML_DECL = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\r\n';
 const escXml = (s) => String(s).replace(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g, '')
@@ -255,6 +259,27 @@ async function registerPart(zip, part, path) {
   }
 }
 
+async function clearPrivacyFlags(zip) {
+  const ws = zip.file('word/settings.xml');
+  if (ws) {
+    const s = await ws.async('string');
+    const u = s.replace(/<(?:\w+:)?remove(?:PersonalInformation|DateAndTime)\b[^/>]*(?:\/>|>[\s\S]*?<\/(?:\w+:)?remove(?:PersonalInformation|DateAndTime)>)/g, '');
+    if (u !== s) zip.file('word/settings.xml', u);
+  }
+  const pp = zip.file('ppt/presProps.xml');
+  if (pp) {
+    const s = await pp.async('string');
+    const u = s.replace(/\s+removePersonalInfoOnSave="(?:1|true)"/gi, '');
+    if (u !== s) zip.file('ppt/presProps.xml', u);
+  }
+  const wb = zip.file('xl/workbook.xml');
+  if (wb) {
+    const s = await wb.async('string');
+    const u = s.replace(/\s+filterPrivacy="(?:1|true)"/gi, '');
+    if (u !== s) zip.file('xl/workbook.xml', u);
+  }
+}
+
 // Chỉ ghi lại các trường đã thay đổi; mọi phần khác của file được giữ nguyên.
 export async function buildOffice(f) {
   const zip = await JSZip.loadAsync(f.buffer);
@@ -262,6 +287,10 @@ export async function buildOffice(f) {
   const changed = changedFields(f);
   const parts = new Set(changed.map((fd) => fd.part));
   if (customChanged(f)) parts.add('custom');
+
+  if (PERSONAL_KEYS.some((k) => String(f.values[k] ?? '').trim())) {
+    await clearPrivacyFlags(zip);
+  }
 
   for (const part of parts) {
     const path = paths[part];
@@ -275,5 +304,9 @@ export async function buildOffice(f) {
     }
     if (!existing) await registerPart(zip, part, path);
   }
+
+  const dt = zipDate(f);
+  for (const entry of Object.values(zip.files)) entry.date = dt;
+
   return zip.generateAsync({ type: 'blob', compression: 'DEFLATE', compressionOptions: { level: 6 }, mimeType: MIME[f.family] });
 }
