@@ -2,7 +2,7 @@
 
 Công cụ web của **Uy** giúp sửa thông tin **File → Info** của file Word, PowerPoint, Excel (`.docx`, `.pptx`, `.xlsx`, kèm `.docm`, `.dotx`, `.pptm`, `.ppsx`, `.xlsm`...).
 
-🔒 **File được xử lý 100% trên trình duyệt**, không tải lên server nào.
+**File được xử lý 100% trên trình duyệt**, không tải lên server nào.
 
 ## Sửa được những gì
 

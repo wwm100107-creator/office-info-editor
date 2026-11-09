@@ -1,5 +1,6 @@
 import './style.css';
 import JSZip from 'jszip';
+import { ICONS } from './icons.js';
 import { loadOffice, buildOffice, familyOf, FIELDS, GROUPS, PERSONAL_KEYS, nowLocal, zipDate, isDirty, changedFields, customChanged } from './ooxml.js';
 
 const $ = (s) => document.querySelector(s);
@@ -62,7 +63,7 @@ function renderList() {
       <span class="tag ${f.family}">${esc(f.ext)}</span>
       <span class="fname" title="${esc(f.name)}">${esc(f.name)}</span>
       ${isDirty(f) ? '<span class="dot" title="Đã chỉnh sửa"></span>' : ''}
-      <button class="x" data-remove="${f.id}" title="Bỏ file này">×</button>
+      <button class="x" data-remove="${f.id}" title="Bỏ file này">${ICONS.close}</button>
     </li>`).join('');
 }
 
@@ -110,14 +111,15 @@ function renderForm() {
       <input data-ci="${i}" data-cf="name" type="text" placeholder="Tên thuộc tính" value="${esc(p.name)}" />
       <select data-ci="${i}" data-cf="type">${CUSTOM_TYPES.map(([t, n]) => `<option value="${t}" ${p.type === t ? 'selected' : ''}>${n}</option>`).join('')}</select>
       ${customValueHTML(p, i)}
-      <button type="button" class="x" data-cdel="${i}" title="Xóa thuộc tính">×</button>
+      <button type="button" class="x" data-cdel="${i}" title="Xóa thuộc tính">${ICONS.close}</button>
     </div>`).join('')}
-    <button type="button" class="btn small" id="btn-add-custom">+ Thêm thuộc tính</button>
+    <button type="button" class="btn small" id="btn-add-custom">${ICONS.plus}<span>Thêm thuộc tính</span></button>
   </fieldset>`;
 
   const isFinal = f.custom.some((p) => p.name === '_MarkAsFinal' && p.value === 'true');
   $('#btn-final').classList.toggle('primary', isFinal);
-  $('#btn-final').textContent = isFinal ? '🔒 Đã khóa Mark as Final' : '🔒 Khóa chỉnh sửa (Mark as Final)';
+  const finalLbl = $('#btn-final-label');
+  if (finalLbl) finalLbl.textContent = isFinal ? 'Đã khóa Mark as Final' : 'Khóa chỉnh sửa (Mark as Final)';
 
   $('#form').innerHTML = groups + custom;
 }
