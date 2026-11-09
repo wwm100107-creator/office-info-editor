@@ -26,11 +26,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
   max-width: 1280px; width: 100%; margin: 0 auto; padding: 22px 20px;
 }
 .brand { display: flex; align-items: center; gap: 14px; }
-.logo {
-  width: 44px; height: 44px; border-radius: 12px; display: grid; place-items: center;
-  background: linear-gradient(135deg, #6366f1, #4338ca); color: #fff; font: 700 22px Georgia, serif;
-  box-shadow: 0 6px 16px rgba(79, 70, 229, .3);
-}
+.logo { width: 44px; height: 44px; display: block; flex: none; }
 .brand h1 { font-size: 22px; }
 .brand p { margin: 4px 0 0; color: var(--muted); font-size: 14px; }
 .privacy { font-size: 13px; color: #166534; background: #dcfce7; padding: 6px 12px; border-radius: 999px; }
