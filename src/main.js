@@ -287,7 +287,7 @@ $('#btn-download-all').addEventListener('click', async () => {
       used.add(name.toLowerCase());
       zip.file(name, await buildOffice(f), { date: zipDate(f) });
     }
-    saveBlob(await zip.generateAsync({ type: 'blob' }), 'office-info-edited.zip');
+    saveBlob(await zip.generateAsync({ type: 'blob' }), 'uy-office-info.zip');
   } catch (e) {
     toast(`Lỗi khi tạo file: ${e.message}`, 'error');
   }
